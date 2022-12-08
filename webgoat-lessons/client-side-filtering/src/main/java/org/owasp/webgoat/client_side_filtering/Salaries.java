@@ -22,7 +22,10 @@
 
 package org.owasp.webgoat.client_side_filtering;
 
+
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
@@ -49,8 +52,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+
+public class Salaries { // {extends Endpoint {
+=======
 @Slf4j
 public class Salaries {
+
 
     @Value("${webgoat.user.directory}")
     private String webGoatHomeDirectory;
