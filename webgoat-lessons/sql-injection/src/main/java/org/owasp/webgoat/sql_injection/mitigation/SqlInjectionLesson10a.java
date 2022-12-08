@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
-@AssignmentHints(value = {"SqlStringInjectionHint-mitigation-10a-1", "SqlStringInjectionHint-mitigation-10a-10a2"})
+@AssignmentHints(value = {"SqlStringInjectionHint-mitigation-10a-1", "SqlStringInjectionHint-mitigation-10a-2"})
 public class SqlInjectionLesson10a extends AssignmentEndpoint {
 
     private String[] results = {"getConnection", "PreparedStatement", "prepareStatement", "?", "?", "setString", "setString"};
@@ -48,13 +48,13 @@ public class SqlInjectionLesson10a extends AssignmentEndpoint {
             if (input.toLowerCase().contains(this.results[position].toLowerCase())) {
                 completed = true;
             } else {
-                return trackProgress(failed().build());
+                return failed(this).build();
             }
             position++;
         }
         if (completed) {
-            return trackProgress(success().build());
+            return success(this).build();
         }
-        return trackProgress(failed().build());
+        return failed(this).build();
     }
 }

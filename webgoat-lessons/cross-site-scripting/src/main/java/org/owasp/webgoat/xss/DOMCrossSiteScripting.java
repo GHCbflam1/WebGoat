@@ -25,7 +25,10 @@ package org.owasp.webgoat.xss;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.owasp.webgoat.session.UserSessionData;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
@@ -42,9 +45,9 @@ public class DOMCrossSiteScripting extends AssignmentEndpoint {
         userSessionData.setValue("randValue", String.valueOf(number.nextInt()));
 
         if (param1 == 42 && param2 == 24 && request.getHeader("webgoat-requested-by").equals("dom-xss-vuln")) {
-            return trackProgress(success().output("phoneHome Response is " + userSessionData.getValue("randValue").toString()).build());
+            return success(this).output("phoneHome Response is " + userSessionData.getValue("randValue").toString()).build();
         } else {
-            return trackProgress(failed().build());
+            return failed(this).build();
         }
     }
 }

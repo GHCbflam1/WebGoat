@@ -9,7 +9,7 @@ import lombok.Getter;
  * This file is part of WebGoat, an Open Web Application Security Project
  * utility. For details, please see http://www.owasp.org/
  * <p>
- * Copyright (c) 2002 - 20014 Bruce Mayhew
+ * Copyright (c) 2002 - 2014 Bruce Mayhew
  * <p>
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -48,6 +48,7 @@ public enum Category {
     XSS("(A7) Cross-Site Scripting (XSS)", 307),
     INSECURE_DESERIALIZATION("(A8) Insecure Deserialization", 308),
     VULNERABLE_COMPONENTS("(A9) Vulnerable Components", 309),
+    SESSION_MANAGEMENT("(A10) Session Management Flaws", 310),
     
     REQUEST_FORGERIES("(A8:2013) Request Forgeries", 318),
 
@@ -66,7 +67,6 @@ public enum Category {
     DOS("Denial of Service", 1500),
     MALICIOUS_EXECUTION("Malicious Execution", 1600),
     CLIENT_SIDE("Client side", 1700),
-    SESSION_MANAGEMENT("Session Management Flaws", 1800),
     WEB_SERVICES("Web Services", 1900),
     ADMIN_FUNCTIONS("Admin Functions", 2000),
     CHALLENGE("Challenges", 3000);

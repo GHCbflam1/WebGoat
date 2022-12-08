@@ -28,7 +28,10 @@ import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.owasp.webgoat.session.UserSessionData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AssignmentHints({"idor.hints.ownProfileAltUrl1", "idor.hints.ownProfileAltUrl2", "idor.hints.ownProfileAltUrl3"})
@@ -37,7 +40,7 @@ public class IDORViewOwnProfileAltUrl extends AssignmentEndpoint {
     @Autowired
     UserSessionData userSessionData;
 
-    @PostMapping("IDOR/profile/alt-path")
+    @PostMapping("/IDOR/profile/alt-path")
     @ResponseBody
     public AttackResult completed(@RequestParam String url) {
         try {
@@ -48,16 +51,16 @@ public class IDORViewOwnProfileAltUrl extends AssignmentEndpoint {
                 String[] urlParts = url.split("/");
                 if (urlParts[0].equals("WebGoat") && urlParts[1].equals("IDOR") && urlParts[2].equals("profile") && urlParts[3].equals(authUserId)) {
                     UserProfile userProfile = new UserProfile(authUserId);
-                    return trackProgress(success().feedback("idor.view.own.profile.success").output(userProfile.profileToMap().toString()).build());
+                    return success(this).feedback("idor.view.own.profile.success").output(userProfile.profileToMap().toString()).build();
                 } else {
-                    return trackProgress(failed().feedback("idor.view.own.profile.failure1").build());
+                    return failed(this).feedback("idor.view.own.profile.failure1").build();
                 }
 
             } else {
-                return trackProgress(failed().feedback("idor.view.own.profile.failure2").build());
+                return failed(this).feedback("idor.view.own.profile.failure2").build();
             }
         } catch (Exception ex) {
-            return failed().feedback("an error occurred with your request").build();
+            return failed(this).feedback("an error occurred with your request").build();
         }
     }
 }

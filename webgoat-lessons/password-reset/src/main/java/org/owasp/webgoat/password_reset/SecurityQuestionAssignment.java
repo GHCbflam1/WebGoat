@@ -25,7 +25,10 @@ package org.owasp.webgoat.password_reset;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,10 +74,10 @@ public class SecurityQuestionAssignment extends AssignmentEndpoint {
         if (answer.isPresent()) {
             triedQuestions.incr(question);
             if (triedQuestions.isComplete()) {
-                return trackProgress(success().output("<b>" + answer + "</b>").build());
+                return success(this).output("<b>" + answer + "</b>").build();
             }
         }
-        return informationMessage()
+        return informationMessage(this)
                 .feedback("password-questions-one-successful")
                 .output(answer.orElse("Unknown question, please try again..."))
                 .build();

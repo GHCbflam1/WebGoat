@@ -23,12 +23,12 @@
 package org.owasp.webgoat.chrome_dev_tools;
 
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
-import org.owasp.webgoat.assignments.AssignmentPath;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.owasp.webgoat.session.UserSessionData;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * This is just a class used to make the the HTTP request.
@@ -46,9 +46,9 @@ public class NetworkDummy extends AssignmentEndpoint {
         String answer = (String) userSessionData.getValue("randValue");
 
         if (successMessage != null && successMessage.equals(answer)) {
-            return trackProgress(success().feedback("xss-dom-message-success").build());
+            return success(this).feedback("xss-dom-message-success").build();
         } else {
-            return trackProgress(failed().feedback("xss-dom-message-failure").build());
+            return failed(this).feedback("xss-dom-message-failure").build();
         }
     }
 }

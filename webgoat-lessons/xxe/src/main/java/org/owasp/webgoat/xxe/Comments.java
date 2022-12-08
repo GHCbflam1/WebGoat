@@ -32,13 +32,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
@@ -76,17 +83,24 @@ public class Comments {
         return allComments.stream().sorted(Comparator.comparing(Comment::getDateTime).reversed()).collect(Collectors.toList());
     }
 
-    protected Comment parseXml(String xml) throws Exception {
-        JAXBContext jc = JAXBContext.newInstance(Comment.class);
+    /**
+     * Notice this parse method is not a "trick" to get the XXE working, we need to catch some of the exception which
+     * might happen during when users post message (we want to give feedback track progress etc). In real life the
+     * XmlMapper bean defined above will be used automatically and the Comment class can be directly used in the
+     * controller method (instead of a String)
+     */
+    protected Comment parseXml(String xml, boolean secure) throws JAXBException, XMLStreamException {
+        var jc = JAXBContext.newInstance(Comment.class);
+        var xif = XMLInputFactory.newInstance();
+        
+        if (secure) {
+        	xif.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
+        	xif.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");  // compliant
+        }
+        
+        var xsr = xif.createXMLStreamReader(new StringReader(xml));
 
-        XMLInputFactory xif = XMLInputFactory.newFactory();
-        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, true);
-        xif.setProperty(XMLInputFactory.IS_VALIDATING, false);
-
-        xif.setProperty(XMLInputFactory.SUPPORT_DTD, true);
-        XMLStreamReader xsr = xif.createXMLStreamReader(new StringReader(xml));
-
-        Unmarshaller unmarshaller = jc.createUnmarshaller();
+        var unmarshaller = jc.createUnmarshaller();
         return (Comment) unmarshaller.unmarshal(xsr);
     }
 

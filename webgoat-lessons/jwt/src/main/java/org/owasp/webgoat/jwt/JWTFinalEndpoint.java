@@ -25,12 +25,12 @@ package org.owasp.webgoat.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.TextCodec;
 import org.apache.commons.lang3.StringUtils;
+import org.owasp.webgoat.LessonDataSource;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.springframework.web.bind.annotation.*;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -62,12 +62,12 @@ import java.sql.SQLException;
 @AssignmentHints({"jwt-final-hint1", "jwt-final-hint2", "jwt-final-hint3", "jwt-final-hint4", "jwt-final-hint5", "jwt-final-hint6"})
 public class JWTFinalEndpoint extends AssignmentEndpoint {
 
-    private final DataSource dataSource;
+    private final LessonDataSource dataSource;
 
-    private JWTFinalEndpoint(DataSource dataSource) {
+    private JWTFinalEndpoint(LessonDataSource dataSource) {
         this.dataSource = dataSource;
     }
-
+    
     @PostMapping("/JWT/final/follow/{user}")
     public @ResponseBody
     String follow(@PathVariable("user") String user) {
@@ -82,7 +82,7 @@ public class JWTFinalEndpoint extends AssignmentEndpoint {
     public @ResponseBody
     AttackResult resetVotes(@RequestParam("token") String token) {
         if (StringUtils.isEmpty(token)) {
-            return trackProgress(failed().feedback("jwt-invalid-token").build());
+            return failed(this).feedback("jwt-invalid-token").build();
         } else {
             try {
                 final String[] errorMessage = {null};
@@ -102,20 +102,20 @@ public class JWTFinalEndpoint extends AssignmentEndpoint {
                     }
                 }).parseClaimsJws(token);
                 if (errorMessage[0] != null) {
-                    return trackProgress(failed().output(errorMessage[0]).build());
+                    return failed(this).output(errorMessage[0]).build();
                 }
                 Claims claims = (Claims) jwt.getBody();
                 String username = (String) claims.get("username");
                 if ("Jerry".equals(username)) {
-                    return trackProgress(failed().feedback("jwt-final-jerry-account").build());
+                    return failed(this).feedback("jwt-final-jerry-account").build();
                 }
                 if ("Tom".equals(username)) {
-                    return trackProgress(success().build());
+                    return success(this).build();
                 } else {
-                    return trackProgress(failed().feedback("jwt-final-not-tom").build());
+                    return failed(this).feedback("jwt-final-not-tom").build();
                 }
             } catch (JwtException e) {
-                return trackProgress(failed().feedback("jwt-invalid-token").output(e.toString()).build());
+                return failed(this).feedback("jwt-invalid-token").output(e.toString()).build();
             }
         }
     }

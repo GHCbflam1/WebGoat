@@ -22,12 +22,9 @@
 
 package org.owasp.webgoat.csrf;
 
-import com.beust.jcommander.internal.Lists;
 import org.owasp.webgoat.lessons.Category;
 import org.owasp.webgoat.lessons.Lesson;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Created by jason on 9/29/17.
@@ -41,10 +38,4 @@ public class CSRF extends Lesson {
 
     @Override
     public String getTitle() { return "csrf.title"; }
-
-    @Override
-    public String getId() {
-        return "CSRF";
-    }
-
 }

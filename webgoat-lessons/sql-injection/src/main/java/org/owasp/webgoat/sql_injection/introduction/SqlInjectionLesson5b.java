@@ -22,6 +22,7 @@
 
 package org.owasp.webgoat.sql_injection.introduction;
 
+import org.owasp.webgoat.LessonDataSource;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 
@@ -40,9 +40,9 @@ import java.sql.*;
 @AssignmentHints(value = {"SqlStringInjectionHint5b1", "SqlStringInjectionHint5b2", "SqlStringInjectionHint5b3", "SqlStringInjectionHint5b4"})
 public class SqlInjectionLesson5b extends AssignmentEndpoint {
 
-    private final DataSource dataSource;
+    private final LessonDataSource dataSource;
 
-    public SqlInjectionLesson5b(DataSource dataSource) {
+    public SqlInjectionLesson5b(LessonDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -61,8 +61,8 @@ public class SqlInjectionLesson5b extends AssignmentEndpoint {
             try {
                 count = Integer.parseInt(login_count);
             } catch (Exception e) {
-                return trackProgress(failed().output("Could not parse: " + login_count + " to a number"
-                        + "<br> Your query was: " + queryString.replace("?", login_count)).build());
+                return failed(this).output("Could not parse: " + login_count + " to a number"
+                        + "<br> Your query was: " + queryString.replace("?", login_count)).build();
             }
 
             query.setInt(1, count);
@@ -79,20 +79,20 @@ public class SqlInjectionLesson5b extends AssignmentEndpoint {
 
                     // If they get back more than one user they succeeded
                     if (results.getRow() >= 6) {
-                        return trackProgress(success().feedback("sql-injection.5b.success").output("Your query was: " + queryString.replace("?", login_count)).feedbackArgs(output.toString()).build());
+                        return success(this).feedback("sql-injection.5b.success").output("Your query was: " + queryString.replace("?", login_count)).feedbackArgs(output.toString()).build();
                     } else {
-                        return trackProgress(failed().output(output.toString() + "<br> Your query was: " + queryString.replace("?", login_count)).build());
+                        return failed(this).output(output.toString() + "<br> Your query was: " + queryString.replace("?", login_count)).build();
                     }
 
                 } else {
-                    return trackProgress(failed().feedback("sql-injection.5b.no.results").output("Your query was: " + queryString.replace("?", login_count)).build());
+                    return failed(this).feedback("sql-injection.5b.no.results").output("Your query was: " + queryString.replace("?", login_count)).build();
                 }
             } catch (SQLException sqle) {
 
-                return trackProgress(failed().output(sqle.getMessage() + "<br> Your query was: " + queryString.replace("?", login_count)).build());
+                return failed(this).output(sqle.getMessage() + "<br> Your query was: " + queryString.replace("?", login_count)).build();
             }
         } catch (Exception e) {
-            return trackProgress(failed().output(this.getClass().getName() + " : " + e.getMessage() + "<br> Your query was: " + queryString.replace("?", login_count)).build());
+            return failed(this).output(this.getClass().getName() + " : " + e.getMessage() + "<br> Your query was: " + queryString.replace("?", login_count)).build();
         }
     }
 }

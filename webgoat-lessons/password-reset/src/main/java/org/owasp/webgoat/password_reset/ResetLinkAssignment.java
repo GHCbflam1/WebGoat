@@ -29,7 +29,13 @@ import org.owasp.webgoat.assignments.AttackResult;
 import org.owasp.webgoat.password_reset.resetlink.PasswordChangeForm;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
@@ -67,12 +73,12 @@ public class ResetLinkAssignment extends AssignmentEndpoint {
         if (TOM_EMAIL.equals(email)) {
             String passwordTom = usersToTomPassword.getOrDefault(getWebSession().getUserName(), PASSWORD_TOM_9);
             if (passwordTom.equals(PASSWORD_TOM_9)) {
-                return trackProgress(failed().feedback("login_failed").build());
+                return failed(this).feedback("login_failed").build();
             } else if (passwordTom.equals(password)) {
-                return trackProgress(success().build());
+                return success(this).build();
             }
         }
-        return trackProgress(failed().feedback("login_failed.tom").build());
+        return failed(this).feedback("login_failed.tom").build();
     }
 
     @GetMapping("/PasswordReset/reset/reset-password/{link}")

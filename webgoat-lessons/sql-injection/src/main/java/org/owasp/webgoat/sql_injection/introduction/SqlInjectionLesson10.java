@@ -23,6 +23,7 @@
 
 package org.owasp.webgoat.sql_injection.introduction;
 
+import org.owasp.webgoat.LessonDataSource;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,9 +41,9 @@ import java.sql.Statement;
 @AssignmentHints(value = {"SqlStringInjectionHint.10.1", "SqlStringInjectionHint.10.2", "SqlStringInjectionHint.10.3", "SqlStringInjectionHint.10.4", "SqlStringInjectionHint.10.5", "SqlStringInjectionHint.10.6"})
 public class SqlInjectionLesson10 extends AssignmentEndpoint {
 
-    private final DataSource dataSource;
+    private final LessonDataSource dataSource;
 
-    public SqlInjectionLesson10(DataSource dataSource) {
+    public SqlInjectionLesson10(LessonDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -65,24 +65,24 @@ public class SqlInjectionLesson10 extends AssignmentEndpoint {
                 if (results.getStatement() != null) {
                     results.first();
                     output.append(SqlInjectionLesson8.generateTable(results));
-                    return trackProgress(failed().feedback("sql-injection.10.entries").output(output.toString()).build());
+                    return failed(this).feedback("sql-injection.10.entries").output(output.toString()).build();
                 } else {
                     if (tableExists(connection)) {
-                        return trackProgress(failed().feedback("sql-injection.10.entries").output(output.toString()).build());
+                        return failed(this).feedback("sql-injection.10.entries").output(output.toString()).build();
                     } else {
-                        return trackProgress(success().feedback("sql-injection.10.success").build());
+                        return success(this).feedback("sql-injection.10.success").build();
                     }
                 }
             } catch (SQLException e) {
                 if (tableExists(connection)) {
-                    return trackProgress(failed().feedback("sql-injection.error").output("<span class='feedback-negative'>" + e.getMessage() + "</span><br>" + output.toString()).build());
+                    return failed(this).output("<span class='feedback-negative'>" + e.getMessage() + "</span><br>" + output.toString()).build();
                 } else {
-                    return trackProgress(success().feedback("sql-injection.10.success").build());
+                    return success(this).feedback("sql-injection.10.success").build();
                 }
             }
 
         } catch (Exception e) {
-            return trackProgress(failed().output("<span class='feedback-negative'>" + e.getMessage() + "</span>").build());
+            return failed(this).output("<span class='feedback-negative'>" + e.getMessage() + "</span>").build();
         }
     }
 

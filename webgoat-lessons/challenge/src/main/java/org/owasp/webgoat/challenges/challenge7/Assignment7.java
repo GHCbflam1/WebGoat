@@ -1,6 +1,5 @@
 package org.owasp.webgoat.challenges.challenge7;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AttackResult;
@@ -13,7 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,7 +75,7 @@ public class Assignment7 extends AssignmentEndpoint {
                 restTemplate.postForEntity(webWolfMailURL, mail, Object.class);
             }
         }
-        return success().feedback("email.send").feedbackArgs(email).build();
+        return success(this).feedback("email.send").feedbackArgs(email).build();
     }
 
     @GetMapping(value = "/challenge/7/.git", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)

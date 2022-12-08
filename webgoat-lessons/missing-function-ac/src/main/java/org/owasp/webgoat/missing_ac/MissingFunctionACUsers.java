@@ -22,6 +22,7 @@
 
 package org.owasp.webgoat.missing_ac;
 
+import lombok.extern.slf4j.Slf4j;
 import org.owasp.webgoat.users.UserService;
 import org.owasp.webgoat.users.WebGoatUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ import java.util.List;
  */
 
 @Controller
+@Slf4j
 public class MissingFunctionACUsers {
 
     // this will actually put controllers on the /WebGoat/* path ... the jsp for list_users restricts what can be seen, but the add_user is not controlled carefully
@@ -81,11 +83,10 @@ public class MissingFunctionACUsers {
     //@PreAuthorize()
     public WebGoatUser addUser(@RequestBody WebGoatUser newUser) {
         try {
-            userService.addUser(newUser.getUsername(),newUser.getPassword(),newUser.getRole());
+            userService.addUser(newUser.getUsername(),newUser.getPassword());
             return userService.loadUserByUsername(newUser.getUsername());
         } catch (Exception ex) {
-            System.out.println("Error creating new User" + ex.getMessage());
-            ex.printStackTrace();
+            log.error("Error creating new User", ex);
             //TODO: implement error handling ...
         } finally {
             // no streams or other resources opened ... nothing to do, right?

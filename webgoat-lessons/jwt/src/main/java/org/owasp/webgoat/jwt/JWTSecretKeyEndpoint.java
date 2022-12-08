@@ -31,7 +31,11 @@ import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.Calendar;
@@ -71,22 +75,21 @@ public class JWTSecretKeyEndpoint extends AssignmentEndpoint {
     @ResponseBody
     public AttackResult login(@RequestParam String token) {
         try {
-            Jwt jwt = Jwts.parser().setSigningKey(JWT_SECRET).parse(token);
+            Jwt jwt = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token);
             Claims claims = (Claims) jwt.getBody();
             if (!claims.keySet().containsAll(expectedClaims)) {
-                return trackProgress(failed().feedback("jwt-secret-claims-missing").build());
+                return failed(this).feedback("jwt-secret-claims-missing").build();
             } else {
                 String user = (String) claims.get("username");
 
                 if (WEBGOAT_USER.equalsIgnoreCase(user)) {
-                    return trackProgress(success().build());
+                    return success(this).build();
                 } else {
-                    return trackProgress(failed().feedback("jwt-secret-incorrect-user").feedbackArgs(user).build());
+                    return failed(this).feedback("jwt-secret-incorrect-user").feedbackArgs(user).build();
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return trackProgress(failed().feedback("jwt-invalid-token").output(e.getMessage()).build());
+            return failed(this).feedback("jwt-invalid-token").output(e.getMessage()).build();
         }
     }
 }

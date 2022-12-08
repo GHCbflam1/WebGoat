@@ -37,7 +37,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
@@ -157,20 +164,20 @@ public class JWTVotesEndpoint extends AssignmentEndpoint {
     @ResponseBody
     public AttackResult resetVotes(@CookieValue(value = "access_token", required = false) String accessToken) {
         if (StringUtils.isEmpty(accessToken)) {
-            return trackProgress(failed().feedback("jwt-invalid-token").build());
+            return failed(this).feedback("jwt-invalid-token").build();
         } else {
             try {
                 Jwt jwt = Jwts.parser().setSigningKey(JWT_PASSWORD).parse(accessToken);
                 Claims claims = (Claims) jwt.getBody();
                 boolean isAdmin = Boolean.valueOf((String) claims.get("admin"));
                 if (!isAdmin) {
-                    return trackProgress(failed().feedback("jwt-only-admin").build());
+                    return failed(this).feedback("jwt-only-admin").build();
                 } else {
                     votes.values().forEach(vote -> vote.reset());
-                    return trackProgress(success().build());
+                    return success(this).build();
                 }
             } catch (JwtException e) {
-                return trackProgress(failed().feedback("jwt-invalid-token").output(e.toString()).build());
+                return failed(this).feedback("jwt-invalid-token").output(e.toString()).build();
             }
         }
     }

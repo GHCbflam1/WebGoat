@@ -22,7 +22,12 @@
 
 package org.owasp.webgoat.jwt;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
@@ -30,9 +35,17 @@ import org.owasp.webgoat.assignments.AttackResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.springframework.http.ResponseEntity.ok;
@@ -83,7 +96,7 @@ public class JWTRefreshEndpoint extends AssignmentEndpoint {
 
     @PostMapping("/JWT/refresh/checkout")
     @ResponseBody
-    public ResponseEntity<?> checkout(@RequestHeader(value = "Authorization", required = false) String token) {
+    public ResponseEntity<AttackResult> checkout(@RequestHeader(value = "Authorization", required = false) String token) {
         if (token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -92,13 +105,13 @@ public class JWTRefreshEndpoint extends AssignmentEndpoint {
             Claims claims = (Claims) jwt.getBody();
             String user = (String) claims.get("user");
             if ("Tom".equals(user)) {
-                return ok(trackProgress(success().build()));
+                return ok(success(this).build());
             }
-            return ok(trackProgress(failed().feedback("jwt-refresh-not-tom").feedbackArgs(user).build()));
+            return ok(failed(this).feedback("jwt-refresh-not-tom").feedbackArgs(user).build());
         } catch (ExpiredJwtException e) {
-            return ok(trackProgress(failed().output(e.getMessage()).build()));
+            return ok(failed(this).output(e.getMessage()).build());
         } catch (JwtException e) {
-            return ok(trackProgress(failed().feedback("jwt-invalid-token").build()));
+            return ok(failed(this).feedback("jwt-invalid-token").build());
         }
     }
 

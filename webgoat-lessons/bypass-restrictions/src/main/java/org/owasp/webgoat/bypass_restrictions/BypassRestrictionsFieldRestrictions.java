@@ -34,19 +34,22 @@ public class BypassRestrictionsFieldRestrictions extends AssignmentEndpoint {
 
     @PostMapping("/BypassRestrictions/FieldRestrictions")
     @ResponseBody
-    public AttackResult completed(@RequestParam String select, @RequestParam String radio, @RequestParam String checkbox, @RequestParam String shortInput) {
+    public AttackResult completed(@RequestParam String select, @RequestParam String radio, @RequestParam String checkbox, @RequestParam String shortInput, @RequestParam String readOnlyInput) {
         if (select.equals("option1") || select.equals("option2")) {
-            return trackProgress(failed().build());
+            return failed(this).build();
         }
         if (radio.equals("option1") || radio.equals("option2")) {
-            return trackProgress(failed().build());
+            return failed(this).build();
         }
         if (checkbox.equals("on") || checkbox.equals("off")) {
-            return trackProgress(failed().build());
+            return failed(this).build();
         }
         if (shortInput.length() <= 5) {
-            return trackProgress(failed().build());
+            return failed(this).build();
         }
-        return trackProgress(success().build());
+        if ("change".equals(readOnlyInput)) {
+            return failed(this).build();
+        }
+        return success(this).build();
     }
 }

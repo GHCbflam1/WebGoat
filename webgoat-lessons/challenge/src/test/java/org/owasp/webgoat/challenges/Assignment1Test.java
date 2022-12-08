@@ -23,18 +23,18 @@
 package org.owasp.webgoat.challenges;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.owasp.webgoat.assignments.AssignmentEndpointTest;
 import org.owasp.webgoat.challenges.challenge1.Assignment1;
+import org.owasp.webgoat.challenges.challenge1.ImageServlet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.net.InetAddress;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
@@ -42,13 +42,13 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standal
  * @author nbaars
  * @since 5/2/17.
  */
-@RunWith(MockitoJUnitRunner.class)
-public class Assignment1Test extends AssignmentEndpointTest {
+@ExtendWith(MockitoExtension.class)
+class Assignment1Test extends AssignmentEndpointTest {
 
     private MockMvc mockMvc;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         Assignment1 assignment1 = new Assignment1();
         init(assignment1);
         new Flag().initFlags();
@@ -56,19 +56,19 @@ public class Assignment1Test extends AssignmentEndpointTest {
     }
 
     @Test
-    public void success() throws Exception {
+    void success() throws Exception {
         InetAddress addr = InetAddress.getLocalHost();
         String host = addr.getHostAddress();
         mockMvc.perform(MockMvcRequestBuilders.post("/challenge/1")
                 .header("X-Forwarded-For", host)
                 .param("username", "admin")
-                .param("password", SolutionConstants.PASSWORD))
+                .param("password", SolutionConstants.PASSWORD.replace("1234", String.format("%04d",ImageServlet.PINCODE))))
                 .andExpect(jsonPath("$.feedback", CoreMatchers.containsString("flag: " + Flag.FLAGS.get(1))))
                 .andExpect(jsonPath("$.lessonCompleted", CoreMatchers.is(true)));
     }
 
     @Test
-    public void wrongPassword() throws Exception {
+    void wrongPassword() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/challenge/1")
                 .param("username", "admin")
                 .param("password", "wrong"))

@@ -28,7 +28,10 @@ import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.owasp.webgoat.session.UserSessionData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -42,10 +45,10 @@ public class CrossSiteScriptingLesson6a extends AssignmentEndpoint {
     public AttackResult completed(@RequestParam String DOMTestRoute) {
 
         if (DOMTestRoute.matches("start\\.mvc#test(\\/|)")) {
-            //return trackProgress()
-            return trackProgress(success().feedback("xss-reflected-6a-success").build());
+            //return )
+            return success(this).feedback("xss-reflected-6a-success").build();
         } else {
-            return trackProgress(failed().feedback("xss-reflected-6a-failure").build());
+            return failed(this).feedback("xss-reflected-6a-failure").build();
         }
     }
 

@@ -22,6 +22,7 @@
 
 package org.owasp.webgoat.sql_injection.introduction;
 
+import org.owasp.webgoat.LessonDataSource;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
@@ -30,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.sql.DataSource;
 import java.sql.*;
 
 
@@ -42,9 +42,9 @@ public class SqlInjectionLesson5a extends AssignmentEndpoint {
             + "always evaluates to true (The string ending literal for '1 is closed by the query itself, so you should not inject it). "
             + "So the injected query basically looks like this: <span style=\"font-style: italic\">SELECT * FROM user_data WHERE first_name = 'John' and last_name = '' or TRUE</span>, "
             + "which will always evaluate to true, no matter what came before it.";
-    private final DataSource dataSource;
+    private final LessonDataSource dataSource;
 
-    public SqlInjectionLesson5a(DataSource dataSource) {
+    public SqlInjectionLesson5a(LessonDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -70,18 +70,18 @@ public class SqlInjectionLesson5a extends AssignmentEndpoint {
 
                     // If they get back more than one user they succeeded
                     if (results.getRow() >= 6) {
-                        return trackProgress(success().feedback("sql-injection.5a.success").output("Your query was: " + query + EXPLANATION).feedbackArgs(output.toString()).build());
+                        return success(this).feedback("sql-injection.5a.success").output("Your query was: " + query + EXPLANATION).feedbackArgs(output.toString()).build();
                     } else {
-                        return trackProgress(failed().output(output.toString() + "<br> Your query was: " + query).build());
+                        return failed(this).output(output.toString() + "<br> Your query was: " + query).build();
                     }
                 } else {
-                    return trackProgress(failed().feedback("sql-injection.5a.no.results").output("Your query was: " + query).build());
+                    return failed(this).feedback("sql-injection.5a.no.results").output("Your query was: " + query).build();
                 }
             } catch (SQLException sqle) {
-                return trackProgress(failed().output(sqle.getMessage() + "<br> Your query was: " + query).build());
+                return failed(this).output(sqle.getMessage() + "<br> Your query was: " + query).build();
             }
         } catch (Exception e) {
-            return trackProgress(failed().output(this.getClass().getName() + " : " + e.getMessage() + "<br> Your query was: " + query).build());
+            return failed(this).output(this.getClass().getName() + " : " + e.getMessage() + "<br> Your query was: " + query).build();
         }
     }
 

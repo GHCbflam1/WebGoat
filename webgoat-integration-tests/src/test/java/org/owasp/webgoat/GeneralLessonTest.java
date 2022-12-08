@@ -3,8 +3,8 @@ package org.owasp.webgoat;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class GeneralLessonTest extends IntegrationTest {
     @Test
     public void httpProxies() {
         startLesson("HttpProxies");
-        Assert.assertThat(RestAssured.given()
+        MatcherAssert.assertThat(RestAssured.given()
                 .when().relaxedHTTPSValidation().cookie("JSESSIONID", getWebGoatCookie()).header("x-request-intercepted", "true")
                 .contentType(ContentType.JSON)
                 .get(url("HttpProxies/intercept-request?changeMe=Requests are tampered easily"))
@@ -61,6 +61,38 @@ public class GeneralLessonTest extends IntegrationTest {
         checkResults("/cia/");
 
     }
+    
+    @Test
+    public void vulnerableComponents() {
+    	String solution = "<contact class='dynamic-proxy'>\n" + 
+    			"<interface>org.owasp.webgoat.vulnerable_components.Contact</interface>\n" + 
+    			"  <handler class='java.beans.EventHandler'>\n" + 
+    			"    <target class='java.lang.ProcessBuilder'>\n" + 
+    			"      <command>\n" + 
+    			"        <string>calc.exe</string>\n" + 
+    			"      </command>\n" + 
+    			"    </target>\n" + 
+    			"    <action>start</action>\n" + 
+    			"  </handler>\n" + 
+    			"</contact>";
+    	startLesson("VulnerableComponents");
+        Map<String, Object> params = new HashMap<>();
+        params.clear();
+        params.put("payload", solution);
+        checkAssignment(url("/WebGoat/VulnerableComponents/attack1"), params, true);
+        checkResults("/VulnerableComponents/");
+    }
+    
+    @Test
+    public void insecureLogin() {
+    	startLesson("InsecureLogin");
+        Map<String, Object> params = new HashMap<>();
+        params.clear();
+        params.put("username", "CaptainJack");
+        params.put("password", "BlackPearl");
+        checkAssignment(url("/WebGoat/InsecureLogin/task"), params, true);
+        checkResults("/InsecureLogin/");
+    }
 
     @Test
     public void securePasswords() {
@@ -82,7 +114,7 @@ public class GeneralLessonTest extends IntegrationTest {
         checkResults("/auth-bypass/");
 
         startLesson("HttpProxies");
-        Assert.assertThat(RestAssured.given().when().relaxedHTTPSValidation().cookie("JSESSIONID", getWebGoatCookie()).header("x-request-intercepted", "true")
+        MatcherAssert.assertThat(RestAssured.given().when().relaxedHTTPSValidation().cookie("JSESSIONID", getWebGoatCookie()).header("x-request-intercepted", "true")
                 .contentType(ContentType.JSON)
                 .get(url("/WebGoat/HttpProxies/intercept-request?changeMe=Requests are tampered easily")).then()
                 .statusCode(200).extract().path("lessonCompleted"), CoreMatchers.is(true));
@@ -137,6 +169,18 @@ public class GeneralLessonTest extends IntegrationTest {
         checkAssignment(url("/auth-bypass/verify-account"), params, true);
         checkResults("/auth-bypass/");
 
+    }
+    
+    @Test
+    public void lessonTemplate() {
+    	startLesson("LessonTemplate");
+    	Map<String, Object> params = new HashMap<>();
+        params.clear();
+        params.put("param1", "secr37Value");
+        params.put("param2", "Main");
+        checkAssignment(url("/lesson-template/sample-attack"), params, true);
+        checkResults("/lesson-template/");
+    	
     }
     
 }

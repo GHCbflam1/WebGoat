@@ -38,10 +38,7 @@ import org.springframework.web.servlet.i18n.FixedLocaleResolver;
 
 import java.util.Locale;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
+//Do not remove is the base class for all assignments tests
 public class AssignmentEndpointTest {
 
     @Mock
@@ -63,7 +60,6 @@ public class AssignmentEndpointTest {
 
     public void init(AssignmentEndpoint a) {
         messages.setBasenames("classpath:/i18n/messages", "classpath:/i18n/WebGoatLabels");
-        ReflectionTestUtils.setField(a, "userTrackerRepository", userTrackerRepository);
         ReflectionTestUtils.setField(a, "userSessionData", userSessionData);
         ReflectionTestUtils.setField(a, "webSession", webSession);
         ReflectionTestUtils.setField(a, "messages", pluginMessages);

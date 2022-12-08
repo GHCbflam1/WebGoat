@@ -22,12 +22,13 @@
 
 package org.owasp.webgoat.xss;
 
+import lombok.extern.slf4j.Slf4j;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
-import org.springframework.web.bind.annotation.*;
-
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 //@RestController
 @Deprecated
@@ -52,10 +53,10 @@ public class CrossSiteScriptingLesson4 extends AssignmentEndpoint {
                 editor.contains("MyCommentDAO.addComment(threadID, userID") &&
                 editor.contains(".getCleanHTML());")) {
             log.debug("true");
-            return trackProgress(success().feedback("xss-mitigation-4-success").build());
+            return success(this).feedback("xss-mitigation-4-success").build();
         } else {
             log.debug("false");
-            return trackProgress(failed().feedback("xss-mitigation-4-failed").build());
+            return failed(this).feedback("xss-mitigation-4-failed").build();
         }
     }
 }

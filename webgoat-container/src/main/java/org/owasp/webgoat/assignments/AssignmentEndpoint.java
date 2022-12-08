@@ -29,14 +29,11 @@ import lombok.Getter;
 import org.owasp.webgoat.i18n.PluginMessages;
 import org.owasp.webgoat.session.UserSessionData;
 import org.owasp.webgoat.session.WebSession;
-import org.owasp.webgoat.users.UserTracker;
 import org.owasp.webgoat.users.UserTrackerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AssignmentEndpoint {
 
-    @Autowired
-    private UserTrackerRepository userTrackerRepository;
     @Autowired
     private WebSession webSession;
     @Autowired
@@ -44,20 +41,6 @@ public abstract class AssignmentEndpoint {
     @Getter
     @Autowired
     private PluginMessages messages;
-
-    protected AttackResult trackProgress(AttackResult attackResult) {
-        UserTracker userTracker = userTrackerRepository.findByUser(webSession.getUserName());
-        if (userTracker == null) {
-            userTracker = new UserTracker(webSession.getUserName());
-        }
-        if (attackResult.assignmentSolved()) {
-            userTracker.assignmentSolved(webSession.getCurrentLesson(), this.getClass().getSimpleName());
-        } else {
-            userTracker.assignmentFailed(webSession.getCurrentLesson());
-        }
-        userTrackerRepository.save(userTracker);
-        return attackResult;
-    }
 
     protected WebSession getWebSession() {
         return webSession;
@@ -76,9 +59,10 @@ public abstract class AssignmentEndpoint {
      * Of course you can overwrite these values in a specific lesson
      *
      * @return a builder for creating a result from a lesson
+     * @param assignment
      */
-    protected AttackResult.AttackResultBuilder success() {
-        return AttackResult.builder(messages).lessonCompleted(true).feedback("assignment.solved");
+    protected AttackResult.AttackResultBuilder success(AssignmentEndpoint assignment) {
+        return AttackResult.builder(messages).lessonCompleted(true).attemptWasMade().feedback("assignment.solved").assignment(assignment);
     }
 
     /**
@@ -90,12 +74,13 @@ public abstract class AssignmentEndpoint {
      * Of course you can overwrite these values in a specific lesson
      *
      * @return a builder for creating a result from a lesson
+     * @param assignment
      */
-    protected AttackResult.AttackResultBuilder failed() {
-        return AttackResult.builder(messages).lessonCompleted(false).feedback("assignment.not.solved");
+    protected AttackResult.AttackResultBuilder failed(AssignmentEndpoint assignment) {
+        return AttackResult.builder(messages).lessonCompleted(false).attemptWasMade().feedback("assignment.not.solved").assignment(assignment);
     }
 
-    protected AttackResult.AttackResultBuilder informationMessage() {
-        return AttackResult.builder(messages).lessonCompleted(false);
+    protected AttackResult.AttackResultBuilder informationMessage(AssignmentEndpoint assignment) {
+        return AttackResult.builder(messages).lessonCompleted(false).assignment(assignment);
     }
 }

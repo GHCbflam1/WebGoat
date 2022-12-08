@@ -32,10 +32,17 @@ import org.owasp.webgoat.assignments.AttackResult;
 import org.owasp.webgoat.session.WebSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.MediaType.ALL_VALUE;
 
@@ -90,13 +97,13 @@ public class ForgedReviews extends AssignmentEndpoint {
         userReviews.put(webSession.getUserName(), reviews);
         //short-circuit
         if (validateReq == null || !validateReq.equals(weakAntiCSRF)) {
-            return trackProgress(failed().feedback("csrf-you-forgot-something").build());
+            return failed(this).feedback("csrf-you-forgot-something").build();
         }
         //we have the spoofed files
         if (referer != "NULL" && refererArr[2].equals(host)) {
-            return trackProgress(failed().feedback("csrf-same-host").build());
+            return failed(this).feedback("csrf-same-host").build();
         } else {
-            return trackProgress(success().feedback("csrf-review.success").build()); //feedback("xss-stored-comment-failure")
+            return success(this).feedback("csrf-review.success").build(); //feedback("xss-stored-comment-failure")
         }
     }
 }

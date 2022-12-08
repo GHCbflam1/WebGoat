@@ -23,6 +23,7 @@
 
 package org.owasp.webgoat.sql_injection.introduction;
 
+import org.owasp.webgoat.LessonDataSource;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,9 +45,9 @@ import static java.sql.ResultSet.TYPE_SCROLL_INSENSITIVE;
 @AssignmentHints(value = {"SqlStringInjectionHint3-1", "SqlStringInjectionHint3-2"})
 public class SqlInjectionLesson3 extends AssignmentEndpoint {
 
-    private final DataSource dataSource;
+    private final LessonDataSource dataSource;
 
-    public SqlInjectionLesson3(DataSource dataSource) {
+    public SqlInjectionLesson3(LessonDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -70,16 +70,16 @@ public class SqlInjectionLesson3 extends AssignmentEndpoint {
                 if (results.getString("department").equals("Sales")) {
                     output.append("<span class='feedback-positive'>" + query + "</span>");
                     output.append(SqlInjectionLesson8.generateTable(results));
-                    return trackProgress(success().output(output.toString()).build());
+                    return success(this).output(output.toString()).build();
                 } else {
-                    return trackProgress(failed().output(output.toString()).build());
+                    return failed(this).output(output.toString()).build();
                 }
 
             } catch (SQLException sqle) {
-                return trackProgress(failed().output(sqle.getMessage()).build());
+                return failed(this).output(sqle.getMessage()).build();
             }
         } catch (Exception e) {
-            return trackProgress(failed().output(this.getClass().getName() + " : " + e.getMessage()).build());
+            return failed(this).output(this.getClass().getName() + " : " + e.getMessage()).build();
         }
     }
 }

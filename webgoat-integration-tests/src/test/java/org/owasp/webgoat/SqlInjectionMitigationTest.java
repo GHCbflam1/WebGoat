@@ -1,13 +1,12 @@
 package org.owasp.webgoat;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
@@ -39,6 +38,14 @@ public class SqlInjectionMitigationTest extends IntegrationTest {
                 "}");
         checkAssignment(url("/WebGoat/SqlInjectionMitigations/attack10b"), params, true);
 
+        params.clear();
+        params.put("userid_sql_only_input_validation", "Smith';SELECT/**/*/**/from/**/user_system_data;--");
+        checkAssignment(url("/WebGoat/SqlOnlyInputValidation/attack"), params, true);
+
+        params.clear();
+        params.put("userid_sql_only_input_validation_on_keywords", "Smith';SESELECTLECT/**/*/**/FRFROMOM/**/user_system_data;--");
+        checkAssignment(url("/WebGoat/SqlOnlyInputValidationOnKeywords/attack"), params, true);
+
         RestAssured.given()
                 .when().relaxedHTTPSValidation().cookie("JSESSIONID", getWebGoatCookie())
                 .contentType(ContentType.JSON)
@@ -52,13 +59,12 @@ public class SqlInjectionMitigationTest extends IntegrationTest {
                 .get(url("/WebGoat/SqlInjectionMitigations/servers?column=unknown"))
                 .then()
                 .statusCode(500)
-                .body("message", containsString("select id, hostname, ip, mac, status, description from servers  where status <> 'out of order' order by"));
+                .body("trace", containsString("select id, hostname, ip, mac, status, description from servers  where status <> 'out of order' order by"));
 
         params.clear();
         params.put("ip", "104.130.219.202");
         checkAssignment(url("/WebGoat/SqlInjectionMitigations/attack12a"), params, true);
 
-        checkResults("/SqlInjectionMitigations/");
-
+        checkResults();
     }
 }

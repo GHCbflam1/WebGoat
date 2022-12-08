@@ -23,6 +23,7 @@
 package org.owasp.webgoat.xxe;
 
 import org.apache.commons.exec.OS;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
@@ -30,7 +31,13 @@ import org.owasp.webgoat.session.WebSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -39,7 +46,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class ContentTypeAssignment extends AssignmentEndpoint {
 
     private static final String[] DEFAULT_LINUX_DIRECTORIES = {"usr", "etc", "var"};
-    private static final String[] DEFAULT_WINDOWS_DIRECTORIES = {"Windows", "Program Files (x86)", "Program Files"};
+    private static final String[] DEFAULT_WINDOWS_DIRECTORIES = {"Windows", "Program Files (x86)", "Program Files", "pagefile.sys"};
 
     @Value("${webgoat.server.directory}")
     private String webGoatHomeDirectory;
@@ -48,40 +55,44 @@ public class ContentTypeAssignment extends AssignmentEndpoint {
     @Autowired
     private Comments comments;
 
-    @PostMapping(path = "xxe/content-type", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "xxe/content-type")
     @ResponseBody
-    public AttackResult createNewUser(@RequestBody String commentStr, @RequestHeader("Content-Type") String contentType) throws Exception {
-        AttackResult attackResult = failed().build();
+    public AttackResult createNewUser(HttpServletRequest request, @RequestBody String commentStr, @RequestHeader("Content-Type") String contentType) throws Exception {
+        AttackResult attackResult = failed(this).build();
 
         if (APPLICATION_JSON_VALUE.equals(contentType)) {
             comments.parseJson(commentStr).ifPresent(c -> comments.addComment(c, true));
-            attackResult = failed().feedback("xxe.content.type.feedback.json").build();
+            attackResult = failed(this).feedback("xxe.content.type.feedback.json").build();
         }
 
         if (null != contentType && contentType.contains(MediaType.APPLICATION_XML_VALUE)) {
             String error = "";
             try {
-                Comment comment = comments.parseXml(commentStr);
+                boolean secure = false;
+                if (null != request.getSession().getAttribute("applySecurity")) {
+                    secure = true;
+                }
+                Comment comment = comments.parseXml(commentStr, secure);
                 comments.addComment(comment, false);
                 if (checkSolution(comment)) {
-                    attackResult = success().build();
+                    attackResult = success(this).build();
                 }
             } catch (Exception e) {
-                error = org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace(e);
-                attackResult = failed().feedback("xxe.content.type.feedback.xml").output(error).build();
+                error = ExceptionUtils.getStackTrace(e);
+                attackResult = failed(this).feedback("xxe.content.type.feedback.xml").output(error).build();
             }
         }
 
-        return trackProgress(attackResult);
+        return attackResult;
     }
 
-   private boolean checkSolution(Comment comment) {
-       String[] directoriesToCheck = OS.isFamilyMac() || OS.isFamilyUnix() ? DEFAULT_LINUX_DIRECTORIES : DEFAULT_WINDOWS_DIRECTORIES;
-       boolean success = true;
-       for (String directory : directoriesToCheck) {
-           success &= org.apache.commons.lang3.StringUtils.contains(comment.getText(), directory);
-       }
-       return success;
-   } 
+    private boolean checkSolution(Comment comment) {
+        String[] directoriesToCheck = OS.isFamilyMac() || OS.isFamilyUnix() ? DEFAULT_LINUX_DIRECTORIES : DEFAULT_WINDOWS_DIRECTORIES;
+        boolean success = false;
+        for (String directory : directoriesToCheck) {
+            success |= org.apache.commons.lang3.StringUtils.contains(comment.getText(), directory);
+        }
+        return success;
+    }
 
 }

@@ -27,7 +27,11 @@ import org.owasp.webgoat.assignments.AssignmentHints;
 import org.owasp.webgoat.assignments.AttackResult;
 import org.owasp.webgoat.session.UserSessionData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AssignmentHints({"idor.hints.otherProfile1", "idor.hints.otherProfile2", "idor.hints.otherProfile3", "idor.hints.otherProfile4", "idor.hints.otherProfile5", "idor.hints.otherProfile6", "idor.hints.otherProfile7", "idor.hints.otherProfile8", "idor.hints.otherProfile9"})
@@ -36,7 +40,7 @@ public class IDOREditOtherProfiile extends AssignmentEndpoint {
     @Autowired
     private UserSessionData userSessionData;
 
-    @PutMapping(path = "IDOR/profile/{userId}", consumes = "application/json")
+    @PutMapping(path = "/IDOR/profile/{userId}", consumes = "application/json")
     @ResponseBody
     public AttackResult completed(@PathVariable("userId") String userId, @RequestBody UserProfile userSubmittedProfile) {
 
@@ -52,42 +56,42 @@ public class IDOREditOtherProfiile extends AssignmentEndpoint {
             // we will persist in the session object for now in case we want to refer back or use it later
             userSessionData.setValue("idor-updated-other-profile", currentUserProfile);
             if (currentUserProfile.getRole() <= 1 && currentUserProfile.getColor().toLowerCase().equals("red")) {
-                return trackProgress(success()
+                return success(this)
                         .feedback("idor.edit.profile.success1")
                         .output(currentUserProfile.profileToMap().toString())
-                        .build());
+                        .build();
             }
 
             if (currentUserProfile.getRole() > 1 && currentUserProfile.getColor().toLowerCase().equals("red")) {
-                return trackProgress(success()
+                return success(this)
                         .feedback("idor.edit.profile.failure1")
                         .output(currentUserProfile.profileToMap().toString())
-                        .build());
+                        .build();
             }
 
             if (currentUserProfile.getRole() <= 1 && !currentUserProfile.getColor().toLowerCase().equals("red")) {
-                return trackProgress(success()
+                return success(this)
                         .feedback("idor.edit.profile.failure2")
                         .output(currentUserProfile.profileToMap().toString())
-                        .build());
+                        .build();
             }
 
             // else
-            return trackProgress(failed()
+            return failed(this)
                     .feedback("idor.edit.profile.failure3")
                     .output(currentUserProfile.profileToMap().toString())
-                    .build());
+                    .build();
         } else if (userSubmittedProfile.getUserId().equals(authUserId)) {
-            return failed().feedback("idor.edit.profile.failure4").build();
+            return failed(this).feedback("idor.edit.profile.failure4").build();
         }
 
         if (currentUserProfile.getColor().equals("black") && currentUserProfile.getRole() <= 1) {
-            return trackProgress(success()
+            return success(this)
                     .feedback("idor.edit.profile.success2")
                     .output(userSessionData.getValue("idor-updated-own-profile").toString())
-                    .build());
+                    .build();
         } else {
-            return trackProgress(failed().feedback("idor.edit.profile.failure3").build());
+            return failed(this).feedback("idor.edit.profile.failure3").build();
         }
 
     }

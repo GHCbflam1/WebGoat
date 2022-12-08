@@ -24,9 +24,8 @@ package org.owasp.webgoat.challenges;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import org.owasp.webgoat.assignments.AssignmentEndpoint;
 import org.owasp.webgoat.assignments.AttackResult;
-import org.owasp.webgoat.i18n.PluginMessages;
 import org.owasp.webgoat.session.WebSession;
 import org.owasp.webgoat.users.UserTracker;
 import org.owasp.webgoat.users.UserTrackerRepository;
@@ -48,17 +47,14 @@ import java.util.stream.IntStream;
  * @author nbaars
  * @since 3/23/17.
  */
-@Slf4j
 @RestController
-public class Flag {
+public class Flag extends AssignmentEndpoint {
 
     public static final Map<Integer, String> FLAGS = new HashMap<>();
     @Autowired
     private UserTrackerRepository userTrackerRepository;
     @Autowired
     private WebSession webSession;
-    @Autowired
-    private PluginMessages pluginMessages;
 
     @AllArgsConstructor
     private class FlagPosted {
@@ -81,10 +77,10 @@ public class Flag {
         final AttackResult attackResult;
         if (expectedFlag.equals(flag)) {
             userTracker.assignmentSolved(webSession.getCurrentLesson(), "Assignment" + challengeNumber);
-            attackResult = new AttackResult.AttackResultBuilder(pluginMessages).lessonCompleted(true, "challenge.flag.correct").build();
+            attackResult = success(this).feedback("challenge.flag.correct").build();
         } else {
             userTracker.assignmentFailed(webSession.getCurrentLesson());
-            attackResult = new AttackResult.AttackResultBuilder(pluginMessages).feedback("challenge.flag.incorrect").build();
+            attackResult = failed(this).feedback("challenge.flag.incorrect").build();
         }
         userTrackerRepository.save(userTracker);
         return attackResult;

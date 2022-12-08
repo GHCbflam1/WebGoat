@@ -28,13 +28,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
-import static org.springframework.util.StringUtils.*;
+import static org.springframework.util.StringUtils.hasText;
 
 /**
  * Part of the password reset assignment. Used to send the e-mail.
@@ -61,18 +64,18 @@ public class ResetLinkAssignmentForgotPassword extends AssignmentEndpoint {
         ResetLinkAssignment.resetLinks.add(resetLink);
         String host = request.getHeader("host");
         if (hasText(email)) {
-            if (email.equals(ResetLinkAssignment.TOM_EMAIL) && host.contains("9090")) { //User indeed changed the host header.
+            if (email.equals(ResetLinkAssignment.TOM_EMAIL) && (host.contains("9090")||host.contains("webwolf"))) { //User indeed changed the host header.
                 ResetLinkAssignment.userToTomResetLink.put(getWebSession().getUserName(), resetLink);
                 fakeClickingLinkEmail(host, resetLink);
             } else {
                 try {
                     sendMailToUser(email, host, resetLink);
                 } catch (Exception e) {
-                    return failed().output("E-mail can't be send. please try again.").build();
+                    return failed(this).output("E-mail can't be send. please try again.").build();
                 }
             }
         }
-        return success().feedback("email.send").feedbackArgs(email).build();
+        return success(this).feedback("email.send").feedbackArgs(email).build();
     }
 
     private void sendMailToUser(String email, String host, String resetLink) {

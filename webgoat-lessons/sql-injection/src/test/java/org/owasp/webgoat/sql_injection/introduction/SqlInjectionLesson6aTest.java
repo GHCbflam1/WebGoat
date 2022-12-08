@@ -22,18 +22,14 @@
 
 package org.owasp.webgoat.sql_injection.introduction;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.owasp.webgoat.plugins.LessonTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.owasp.webgoat.sql_injection.SqlLessonTest;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author nbaars
  * @since 6/15/17.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 public class SqlInjectionLesson6aTest extends SqlLessonTest {
 
     @Test
@@ -89,7 +85,7 @@ public class SqlInjectionLesson6aTest extends SqlLessonTest {
 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lessonCompleted", is(false)))
-                .andExpect(jsonPath("$.feedback", is(SqlInjectionLesson8Test.modifySpan(messages.getMessage("sql-injection.6a.no.results")))));
+                .andExpect(jsonPath("$.feedback", is(messages.getMessage("sql-injection.6a.no.results"))));
     }
 
     @Test
